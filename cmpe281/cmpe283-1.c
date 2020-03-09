@@ -69,6 +69,7 @@ struct capability_info procbased[21] =
 };
 
 
+
 struct capability_info procbased_2[27] = 
 {
 	{ 0, "virtualise APIC Access" },
@@ -99,6 +100,42 @@ struct capability_info procbased_2[27] =
 	{ 26, "Enable User Wait And Pause" },
 	{ 28, "Enable ENCLV Exiting" }
 };
+
+
+
+struct capability_info vmx_exit[13] = 
+{
+	{ 2, "Save Debug Controls" },
+	{ 9, "Host Address-Space size" },
+	{ 12, "Load IA32_PERF_GLOBAL" },
+	{ 15, "Acknowledge Interrupt on Exit" },
+	{ 18, "Save IA32_PAT" },
+	{ 19, "LOAD IA32_PAT" },
+	{ 20, "SAVE IA32_EFER" },
+	{ 21, "LOAD IA32_EFER" },	
+	{ 22, "Save VMx-Preemption-Timer Value" },	
+	{ 23, "Clear IA32_BNDCFGS" },
+	{ 24, "conceal VMX from PT" },
+	{ 25, "Clear IA32_RTIT_CTL" },
+	{ 28, "Load CET State" }
+};
+
+
+struct capability_info vmx_entry[11] =
+{
+	{ 2, "Load Debug controls" },
+	{ 9, "IA-32 Mode Guest" },
+	{ 10, "entry to SMM" },
+	{ 11, "Deactivate Dual Monitor Treatment" },
+	{ 13, "Load IA32_Perf_Global_Ctrl" },
+	{ 14, "Load IA32_PAT" },	
+	{ 15, "Load IA32_PERF" },
+	{ 16, "Load IA32_BNDCFGS" },
+	{ 17, "Conceal VMX from PT" },
+	{ 18, "Load IA32_RTIT_CTL" },
+	{ 20, "Load CET State" }
+}; 
+
 
 
 /*
@@ -160,6 +197,18 @@ detect_vmx_features(void)
 	pr_info("Secondary Procbased Controls MSR: 0x%llx\n",
 		(uint64_t)(lo | (uint64_t)hi << 32));
 	report_capability(procbased_2, 27, lo, hi);
+
+	/* VMX Exit controls */
+	rdmsr(IA32_VMX_EXIT_CTLS, lo, hi);
+	pr_info("VMX Exit Controls MSR: 0x%llx\n",
+		(uint64_t)(lo | (uint64_t)hi << 32));
+	report_capability(vmx_exit, 13, lo, hi);
+
+	/* VMX Entry controls */
+	rdmsr(IA32_VMX_ENTRY_CTLS, lo, hi);
+	pr_info("VMX Entry Controls MSR: 0x%llx\n",
+		(uint64_t)(lo | (uint64_t)hi << 32));
+	report_capability(vmx_entry, 11, lo, hi);
 }
 
 /*
