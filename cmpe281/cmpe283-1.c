@@ -60,7 +60,7 @@ struct capability_info procbased[21] =
 	{ 22, "NMI window Exiting" },
 	{ 23, "MOV-DR Exiting" },
 	{ 24, "Unconditional IO Exiting" },
-	{ 25, " Use IO Bitmaps" },
+	{ 25, "Use IO Bitmaps" },
 	{ 27, "Monitor Trap Flag" },
 	{ 28, "Use MSR Bitmaps" },
 	{ 29, "MONITOR Exiting" },
@@ -69,6 +69,36 @@ struct capability_info procbased[21] =
 };
 
 
+struct capability_info procbased_2[27] = 
+{
+	{ 0, "virtualise APIC Access" },
+	{ 1, "Enable EPT" },
+	{ 2, "Descriptor Table Exiting" },
+	{ 3, "Enable RDTSCP" },
+	{ 4, "Virtualise x2APIC Mode" },
+	{ 5, "enable VPID" },
+	{ 6, "WBINVD Exiting" },
+	{ 7, "Unrestricted Guest" },
+	{ 8, "APIC Register Virtualisation" },
+	{ 9, "Virtual Interrupt Delivery" },
+	{ 10, "PAUSE Loop Exiting" },	
+	{ 11, "RDRAND Exiting" },
+	{ 12, "Enable INVPCID" },
+	{ 13, "Enable VM Functions" },
+	{ 14, "VMCS Shadowing" },
+	{ 15, "Enable ENCLS Exiting" },
+	{ 16, "RDSEED Exiting" },
+	{ 17, "Enable PML" },
+	{ 18, "EPT Violation" },
+	{ 19, "Conceal VMX From PT" },
+	{ 20, "Enable XSAVES"},
+	{ 22, "Mode Based Execute Control for EPT" },
+	{ 23, "sub Page Write Permission for EPT" },
+	{ 24, "IntelPT Uses Guest Physical Addresses" },
+	{ 25, "Use TSC Scaling" },
+	{ 26, "Enable User Wait And Pause" },
+	{ 28, "Enable ENCLV Exiting" }
+};
 
 
 /*
@@ -124,6 +154,12 @@ detect_vmx_features(void)
 	pr_info("Procbased Controls MSR: 0x%llx\n",
 		(uint64_t)(lo | (uint64_t)hi << 32));
 	report_capability(procbased, 21, lo, hi);
+
+	/* Procbased_2 controls */
+	rdmsr(IA32_VMX_PROCBASED_CTLS2, lo, hi);
+	pr_info("Secondary Procbased Controls MSR: 0x%llx\n",
+		(uint64_t)(lo | (uint64_t)hi << 32));
+	report_capability(procbased_2, 27, lo, hi);
 }
 
 /*
