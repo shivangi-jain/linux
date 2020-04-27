@@ -1083,7 +1083,32 @@ int kvm_emulate_cpuid(struct kvm_vcpu *vcpu)
 		eax = temp_exit;
 	}
 
-	kvm_cpuid(vcpu, &eax, &ebx, &ecx, &edx, true);
+	else if ( eax == 0x4ffffffd)
+	{
+		printk("the value of ecx is %x", ecx);
+		if(ecx > 68)
+		{
+			eax = 0;
+			ebx = 0;
+			ecx = 0;
+			edx = 0xFFFFFFFF;
+		}
+		else 
+		{
+			temp_exit = num_exit_array[ecx];
+			printk("the num_exits are %d inner", temp_exit);
+			eax = temp_exit;
+			ebx = 0;
+			ecx = 0;
+			edx = 0; 
+		}
+		
+	}
+
+	else
+	{
+		kvm_cpuid(vcpu, &eax, &ebx, &ecx, &edx, true);
+	}
 	
 	
 	kvm_rax_write(vcpu, eax);
