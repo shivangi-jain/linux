@@ -5839,12 +5839,19 @@ void dump_vmcs(void)
  * The guest has exited.  See if we can fix it or if we need userspace
  * assistance.
  */
+
+
 static int vmx_handle_exit(struct kvm_vcpu *vcpu,
 	enum exit_fastpath_completion exit_fastpath)
 {
 	struct vcpu_vmx *vmx = to_vmx(vcpu);
 	u32 exit_reason = vmx->exit_reason;
 	u32 vectoring_info = vmx->idt_vectoring_info;
+
+	extern uint32_t num_exits;
+	extern uint32_t num_exit_array[69];
+	num_exit_array[exit_reason]++;
+	num_exits++;
 
 	trace_kvm_exit(exit_reason, vcpu, KVM_ISA_VMX);
 
