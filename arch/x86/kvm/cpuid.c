@@ -1054,6 +1054,12 @@ bool kvm_cpuid(struct kvm_vcpu *vcpu, u32 *eax, u32 *ebx,
 }
 EXPORT_SYMBOL_GPL(kvm_cpuid);
 
+uint32_t num_exits;
+uint32_t temp_exit;
+uint32_t num_exit_array[69];
+EXPORT_SYMBOL(num_exit_array);
+EXPORT_SYMBOL(num_exits);
+
 int kvm_emulate_cpuid(struct kvm_vcpu *vcpu)
 {
 	u32 eax, ebx, ecx, edx;
@@ -1061,9 +1067,25 @@ int kvm_emulate_cpuid(struct kvm_vcpu *vcpu)
 	if (cpuid_fault_enabled(vcpu) && !kvm_require_cpl(vcpu, 0))
 		return 1;
 
+	temp_exit = 0;
+
 	eax = kvm_rax_read(vcpu);
 	ecx = kvm_rcx_read(vcpu);
+	printk("eax is %x the num_exits are %d outer", eax, num_exits);
+
+	if ( eax == 0x4fffffff)
+	{
+		for(i =0; i < 69 ; i++)
+		{
+			temp_exit = temp_exit + num_exit_array[i];		
+		}
+		printk("the num_exits are %d %d inner", temp_exit, num_exits);
+		eax = temp_exit;
+	}
+
 	kvm_cpuid(vcpu, &eax, &ebx, &ecx, &edx, true);
+	
+	
 	kvm_rax_write(vcpu, eax);
 	kvm_rbx_write(vcpu, ebx);
 	kvm_rcx_write(vcpu, ecx);
