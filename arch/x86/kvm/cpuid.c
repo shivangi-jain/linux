@@ -1057,6 +1057,7 @@ EXPORT_SYMBOL_GPL(kvm_cpuid);
 uint32_t num_exits;
 uint32_t temp_exit;
 uint32_t num_exit_array[69];
+int i;
 EXPORT_SYMBOL(num_exit_array);
 EXPORT_SYMBOL(num_exits);
 

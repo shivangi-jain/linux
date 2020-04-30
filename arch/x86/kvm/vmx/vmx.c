@@ -5839,20 +5839,24 @@ void dump_vmcs(void)
  * The guest has exited.  See if we can fix it or if we need userspace
  * assistance.
  */
-
-
 static int vmx_handle_exit(struct kvm_vcpu *vcpu,
 	enum exit_fastpath_completion exit_fastpath)
 {
 	struct vcpu_vmx *vmx = to_vmx(vcpu);
 	u32 exit_reason = vmx->exit_reason;
 	u32 vectoring_info = vmx->idt_vectoring_info;
-
+	uint64_t start;
+	int ret;
+	uint64_t end;
 	extern uint32_t num_exits;
 	extern uint32_t num_exit_array[69];
+	extern long clock_cycle[69];
+	unsigned int lo,hi;
+
+	__asm__ __volatile__ ("rdtsc" : "=a" (lo), "=d" (hi));
+	start = ((uint64_t)hi << 32) | lo;
 	num_exit_array[exit_reason]++;
 	num_exits++;
-
 	trace_kvm_exit(exit_reason, vcpu, KVM_ISA_VMX);
 
 	/*
@@ -5960,7 +5964,12 @@ static int vmx_handle_exit(struct kvm_vcpu *vcpu,
 	if (!kvm_vmx_exit_handlers[exit_reason])
 		goto unexpected_vmexit;
 
-	return kvm_vmx_exit_handlers[exit_reason](vcpu);
+	ret = kvm_vmx_exit_handlers[exit_reason](vcpu);
+	
+	__asm__ __volatile__ ("rdtsc" : "=a" (lo), "=d" (hi));
+	end = ((uint64_t)hi << 32) | lo;
+	clock_cycle[exit_reason] = end - start;
+	return ret; 
 
 unexpected_vmexit:
 	vcpu_unimpl(vcpu, "vmx: unexpected exit reason 0x%x\n", exit_reason);
