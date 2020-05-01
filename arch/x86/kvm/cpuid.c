@@ -14,6 +14,7 @@
 #include <linux/vmalloc.h>
 #include <linux/uaccess.h>
 #include <linux/sched/stat.h>
+#include <stdatomic.h>
 
 #include <asm/processor.h>
 #include <asm/user.h>
@@ -1055,11 +1056,16 @@ bool kvm_cpuid(struct kvm_vcpu *vcpu, u32 *eax, u32 *ebx,
 EXPORT_SYMBOL_GPL(kvm_cpuid);
 
 uint32_t num_exits;
-uint32_t temp_exit;
+_Atomic uint32_t temp_exit;
 uint32_t num_exit_array[69];
 int i;
+unsigned mask;
+long clock_cycle[69];
+_Atomic long temp_cycle;
+
 EXPORT_SYMBOL(num_exit_array);
 EXPORT_SYMBOL(num_exits);
+EXPORT_SYMBOL(clock_cycle);
 
 int kvm_emulate_cpuid(struct kvm_vcpu *vcpu)
 {
@@ -1072,7 +1078,7 @@ int kvm_emulate_cpuid(struct kvm_vcpu *vcpu)
 
 	eax = kvm_rax_read(vcpu);
 	ecx = kvm_rcx_read(vcpu);
-	printk("eax is %x the num_exits are %d outer", eax, num_exits);
+	//printk("eax is %x the num_exits are %d outer", eax, num_exits);
 
 	if ( eax == 0x4fffffff)
 	{
@@ -1080,13 +1086,13 @@ int kvm_emulate_cpuid(struct kvm_vcpu *vcpu)
 		{
 			temp_exit = temp_exit + num_exit_array[i];		
 		}
-		printk("the num_exits are %d %d inner", temp_exit, num_exits);
+		printk("The total num_exits for all types of exits are %d", num_exits);
 		eax = temp_exit;
 	}
 
 	else if ( eax == 0x4ffffffd)
 	{
-		printk("the value of ecx is %x", ecx);
+		//printk("the value of ecx is %x", ecx);
 		if(ecx > 68)
 		{
 			eax = 0;
@@ -1097,13 +1103,25 @@ int kvm_emulate_cpuid(struct kvm_vcpu *vcpu)
 		else 
 		{
 			temp_exit = num_exit_array[ecx];
-			printk("the num_exits are %d inner", temp_exit);
+			printk("The num of exits for exit number %d are %d", ecx, temp_exit);
 			eax = temp_exit;
 			ebx = 0;
 			ecx = 0;
 			edx = 0; 
 		}
 		
+	}
+	else if ( eax == 0x4ffffffe)
+	{
+		for(i =0; i < 69 ; i++)
+		{
+			temp_cycle = temp_cycle + clock_cycle[i];
+		}
+		printk("The clock cycle time is %ld", temp_cycle);
+		
+		mask = (1UL << 32) - 1;
+		ecx = temp_cycle & mask;
+		ebx = temp_cycle - ecx;
 	}
 
 	else
