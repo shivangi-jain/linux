@@ -1123,6 +1123,29 @@ int kvm_emulate_cpuid(struct kvm_vcpu *vcpu)
 		ecx = temp_cycle & mask;
 		ebx = temp_cycle - ecx;
 	}
+	else if ( eax == 0x4ffffffc)
+	{
+		printk("the value of ecx is %x %d", ecx, ecx);
+		if(ecx > 68)
+		{
+			eax = 0;
+			ebx = 0;
+			ecx = 0;
+			edx = 0xFFFFFFFF;
+		}
+		else 
+		{
+			temp_cycle = clock_cycle[ecx];
+			
+			mask = (1UL << 32) - 1;
+			ecx = temp_cycle & mask;
+			printk("the num_exits and ecx are %ld %d inner ", temp_cycle, ecx);
+			ebx = temp_cycle - ecx;
+			eax = 0; 
+			edx = 0;
+		}
+		
+	}
 
 	else
 	{

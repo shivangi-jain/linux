@@ -5968,7 +5968,7 @@ static int vmx_handle_exit(struct kvm_vcpu *vcpu,
 	
 	__asm__ __volatile__ ("rdtsc" : "=a" (lo), "=d" (hi));
 	end = ((uint64_t)hi << 32) | lo;
-	clock_cycle[exit_reason] = end - start;
+	clock_cycle[exit_reason] = clock_cycle[exit_reason] + (end - start);
 	return ret; 
 
 unexpected_vmexit:
